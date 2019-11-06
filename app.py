@@ -64,7 +64,8 @@ def main():
 
   pwd = os.getenv("PASSWORD")
   if not pwd == None:
-    app.config['custom']['pwd'] = pwd
+    app.config['custom']['pwd'] = pwd.strip()
+  
 
   mergeDefaultConfig(app.config['custom'])
   if not "pwd" in app.config['custom']:
