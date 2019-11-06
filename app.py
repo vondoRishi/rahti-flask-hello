@@ -2,6 +2,11 @@ import flask
 import json
 import os
 
+# EDIT THE FOLLOWING LINE
+DefaultTitle="Hello"
+
+# Don't touch the code below unless you really mean to.
+
 # Templates
 hello = """
 <!DOCTYPE html>
@@ -9,7 +14,7 @@ hello = """
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>Hello</title>
+    <title>""" + DefaultTitle + """</title>
   </head>
   <body>
     <h1> {{ greeting }}  </h1>
@@ -17,8 +22,7 @@ hello = """
     <img src="/static/{{ kitten }}"/ alt="An image of a kitten should be here.">
     {% endif %}
   </body>
-</html>
-"""
+</html>"""
 
 # Default configuration
 defaults = { "pwd": "defaultPassword", "port": 8080, "host": '0.0.0.0', "debug": "False", "greeting": "defaultHello"}
