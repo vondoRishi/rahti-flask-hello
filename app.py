@@ -70,7 +70,7 @@ def main():
   if not pwd == None:
     app.config['custom']['pwd'] = pwd.strip()
   
-
+  app.config['custom'] = {}
   mergeDefaultConfig(app.config['custom'])
   if not "pwd" in app.config['custom']:
     app.config['custom']
