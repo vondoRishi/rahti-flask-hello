@@ -64,13 +64,13 @@ def main():
     with open('config/custom.json') as custom_config_file:
       app.config['custom'] = json.load(custom_config_file)
   except FileNotFoundError:
+    app.config['custom'] = {}
     pass
 
   pwd = os.getenv("PASSWORD")
   if not pwd == None:
     app.config['custom']['pwd'] = pwd.strip()
   
-  app.config['custom'] = {}
   mergeDefaultConfig(app.config['custom'])
   if not "pwd" in app.config['custom']:
     app.config['custom']
