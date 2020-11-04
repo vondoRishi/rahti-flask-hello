@@ -1,86 +1,94 @@
-import flask
+'''
+  Simple Flask app
+'''
 import json
 import os
-
-# EDIT THE FOLLOWING LINE
-DefaultTitle="Work in progress"
-
-# Don't touch the code below unless you really mean to.
+from pathlib import Path
+import flask
 
 # Templates
-hello = """
+# In a proper Flask application all these templates should be in indepent files
+STYLE = """
+body {
+  # CHANGE background color from 'silver' to 'beige'
+  background-color: silver;
+  font-family: "Helvetica Neue",Helvetica,"Liberation Sans",Arial,sans-serif;
+  font-size: 14px;
+  padding: 10%;
+}
+img {
+  width: 90%;
+}
+"""
+
+PAGE = """
 <!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>""" + DefaultTitle + """</title>
+    <title>{{ student }}</title>
+    <style>""" + STYLE + """</style>
   </head>
   <body>
-    <h1> {{ greeting }}  </h1>
-    {% if kitten != "" %}
-    <img src="/static/{{ kitten }}"/ alt="An image of a kitten should be here.">
-    {% endif %}
+    <h1>This is the photo gallery from {{ student }}</h1>
+    <ul>{% for kitten in kittens %}
+      <li><img src='{{ kitten }}'/> {{ kitten }}</li>
+    {% endfor %}</ul>
   </body>
-</html>"""
+</html>
+"""
 
 # Default configuration
-defaults = { "pwd": "defaultPassword", "port": 8080, "host": '0.0.0.0', "debug": "False", "greeting": "defaultHello"}
+defaults = {
+    "student": "??????",
+    "debug": False}
+
+config = {}
 
 # Flask app object
 app = flask.Flask(__name__,
-    static_url_path='/static',
-    static_folder='static')
+                  static_url_path='/static',
+                  static_folder='/static')
 
 # Routes
 @app.route("/", methods=['GET'])
 def home():
-  return "Hello, world!"
-
-@app.route("/kitten", methods=['GET'])
-def kitten():
-  config = app.config['custom']
-  return flask.render_template_string(
-      hello, 
-      kitten='kitten.jpg', 
-      greeting = config['greeting'])
-
-@app.route("/secret-kitten/<string:pwd>", methods=['GET'])
-def secretKitten(pwd):
-  config = app.config['custom']
-  if pwd == config['pwd']:
-    return flask.render_template_string(hello, kitten='kitten.jpg', greeting = config['greeting'] + ', and welcome to the Secret section...')
-  return flask.render_template_string(hello, kitten='', greeting = 'Ah but you must know the correct password!'), 403
-
-# Helper function
-def mergeDefaultConfig(config):
-  for key in defaults:
-    if not key in config:
-      config[key] = defaults[key]
+    '''
+      Hello page, shows photos in the /static folder
+    '''
+    kittens = Path('/static/').rglob('*.jpg')
+    return flask.render_template_string(
+        PAGE,
+        student=config["student"],
+        kittens=kittens)
 
 # Entry function
 def main():
-  try:
-    with open('config/custom.json') as custom_config_file:
-      app.config['custom'] = json.load(custom_config_file)
-  except FileNotFoundError:
-    app.config['custom'] = {}
-    pass
+    '''
+      Main entry function
+    '''
 
-  pwd = os.getenv("PASSWORD")
-  if not pwd == None:
-    app.config['custom']['pwd'] = pwd.strip()
-  
-  mergeDefaultConfig(app.config['custom'])
-  if not "pwd" in app.config['custom']:
-    app.config['custom']
+    # Load student name from file
+    global config
+    try:
+        with open('/etc/flask/config.json') as custom_config_file:
+            config = json.load(custom_config_file)
+    except FileNotFoundError:
+        config = defaults
 
-  print('Custom configuration:')
-  print(json.dumps(app.config['custom']))
+    try:
+        if os.environ['DEBUG']:
+            config["debug"] = True
+    except KeyError:
+        pass
 
-  app.run(debug=app.config['custom']["debug"]=="True",
-      port=app.config['custom']["port"], 
-      host=app.config['custom']["host"])
+    print('Configuration:')
+    print(json.dumps(config))
+
+    app.run(debug=config["debug"],
+            port=8080,
+            host='0.0.0.0')
 
 if __name__ == "__main__":
-  main()
+    main()
